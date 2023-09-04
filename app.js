@@ -24,5 +24,7 @@ module.exports = async() => {
         res.status(200).json({message : "Server is up and running."})
     })
 
+    app.use('/api/v1', require('./routes')())
+
     return app;
 }
