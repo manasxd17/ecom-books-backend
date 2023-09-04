@@ -1,16 +1,5 @@
 const mongoose = require('mongoose')
-const { isEmail } = require('validator')
-
-const cartSchema = new mongoose.Schema({
-    book_id:{
-        type:String,
-        required:true
-    },
-    price:{
-        type:Number,
-        required:true
-    }
-})
+const { isEmail, isMobilePhone } = require('validator')
 
 const userSchema = new mongoose.Schema({
     firstName:{
@@ -35,7 +24,33 @@ const userSchema = new mongoose.Schema({
         type:String,
         required:true
     },
-    cart:[cartSchema]
+    role:{
+        type:String,
+        required:true,
+        enum:["Admin", "Customer"]
+    },
+    address:{
+        addressLine:{
+            type:String,
+            required:false
+        },
+        city:{
+            type:String,
+            required:false
+        },
+        pincode:{
+            type:Number,
+            required:false
+        }
+    },
+    contactNumber:{
+        type:Number,
+        required:true,
+        validate:{
+            validator:isMobilePhone,
+            message:"Incorrect contact information, add country code as well"
+        }
+    }
     },
     { timestamps:true }
 )
