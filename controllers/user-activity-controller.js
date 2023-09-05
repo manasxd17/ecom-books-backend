@@ -1,5 +1,6 @@
 const { Books } = require("../models/books-model")
 const { User } = require("../models/user-model")
+const mongoose = require('mongoose')
 
 const addReview = () => {
     return async (req, res, next) => {
@@ -80,10 +81,16 @@ const removeBook = () => {
             }
             else{
                 const checkBookInCart = await User.find({_id : req.userId}).select({cart :{ $elemMatch :{ book_id : bookId}}})
+
                 if(checkBookInCart[0].cart.length == 0 || checkBookInCart[0].cart[0].quantity <= 0){
                     await User.updateOne({_id : req.userId}, {$pull : { cart :{ book_id : bookId}}}, {safe:true, multi:false})
                     res.status(404).json({success:false, message:"No such book found in your cart"})
                 }
+
+                else if (checkBookInCart[0].cart[0].quantity < quantity){
+                    res.status(400).json({success:false, message:`Can't remove, You have only ${checkBookInCart[0].cart[0].quantity} books in your cart.`})
+                }
+
                 else{
                     if(quantity == "all"){
                         // delete the entry from cart
@@ -93,7 +100,12 @@ const removeBook = () => {
                         const decQuantity = {
                             $inc : { 'cart.$.quantity' : -quantity }
                         }
-                        resp = await User.updateOne({_id : req.userId, 'cart.book_id': bookId}, decQuantity)
+                        resp = await User.findOneAndUpdate({_id : req.userId, 'cart.book_id': bookId}, decQuantity, {new:true})
+                        resp.cart.forEach(async(doc) => {
+                            if(doc.book_id == bookId && doc.quantity <= 0){
+                                await User.updateOne({_id : req.userId}, {$pull : { 'cart' :{ 'book_id' : bookId}}}, {safe:true, multi:false})
+                            }
+                        })
                     }
                     res.status(200).json({success:true, message:"Books removed from the cart."})
                 }
@@ -105,6 +117,8 @@ const removeBook = () => {
     }
 }
 
+
+
 const showCart = () => {
     return async(req, res, next) => {
         try{
@@ -112,6 +126,9 @@ const showCart = () => {
             const cartData = await User.findOne({_id : user_id}, {'cart.title':1, 'cart.price':1, 'cart.quantity':1})
             if(cartData.cart.length){
                 const totalAmount = await User.aggregate([
+                    { $match : {
+                        _id : new mongoose.Types.ObjectId(user_id)
+                    }},
                     {
                         $unwind:"$cart"
                     },

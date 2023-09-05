@@ -10,16 +10,16 @@ const fetchBooks = () => {
                 let order = req.body.order ? req.body.order : 1
                 builderObj['sort'] = {[req.body.sort]:order}
             }
-            if(req.body.searchTerm){
+            if(req.body.searchTerm && req.body.searchTerm.length >=3 ){
                 searchObj["$or"] = searchAbleFields.map((e) => {
-                    return {[e] : req.body.searchTerm}
+                    return {[e] : {$regex: req.body.searchTerm, $options : "i"}}
                 })
             }
             let skip = req.query.from ? req.query.from : 0
             let size = req.query.size ? req.query.size : 10
             builderObj['skip'] = skip
             builderObj['limit'] = size
-            console.log(searchObj)
+            console.log(JSON.stringify(searchObj))
             const resp = await Books.find(searchObj, {__v:0}, builderObj)
             res.status(200).json({success:true, data:resp})
         }

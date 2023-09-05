@@ -13,7 +13,7 @@ const registerUser = () => {
                         lastName:req.body.lastName,
                         email:req.body.email,
                         password:await hashPassword(req.body.password),
-                        role:"Admin",
+                        role:"Customer",
                         contactNumber:req.body.contactNumber,
                         address:req.body.address ? {addressLine:req.body.address.addressLine, city:req.body.address.city, pincode:req.body.address.pincode} : null
                     }
