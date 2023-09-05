@@ -1,6 +1,7 @@
 const { User } = require("../models/user-model")
 const { checkUser, hashPassword, comparePassword, generateToken } = require("../utils/additional_functions")
 
+// TO REGISTER A USER WITH CUSTOMER ROLE
 const registerUser = () => {
     return async(req, res, next) => {
         try{
@@ -34,7 +35,7 @@ const registerUser = () => {
     }
 }
 
-
+// LOGIN FUNCTIONALITY
 const loginController = () => {
     return async(req, res, next) => {
         try{

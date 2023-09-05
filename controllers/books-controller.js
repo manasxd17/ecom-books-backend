@@ -1,6 +1,7 @@
 const { Books } = require("../models/books-model")
 const searchAbleFields = ['title', 'author', 'genre']
 
+// RETURNS ALL THE BOOKS AS PER THE PASSED PARAMETERS LIKE SORT, PAGINATION, SEARCH TERM
 const fetchBooks = () => {
     return async(req, res, next) => {
         try{
@@ -29,6 +30,7 @@ const fetchBooks = () => {
     }
 }
 
+// FETCH ALL INFO ABOUT A PARTICULAR BOOK
 const fetchParticularBook = () => {
     return async(req, res, next) => {
         try{

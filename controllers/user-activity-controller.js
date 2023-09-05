@@ -27,7 +27,7 @@ const addReview = () => {
     }
 }
 
-// AVAILABILITY TO BE RESTRICTED FROM FRONTEND
+// AVAILABILITY OF BOOKS TO BE RESTRICTED FROM FRONTEND
 const addToCart = () => {
     return async (req, res, next) => {
         try {
