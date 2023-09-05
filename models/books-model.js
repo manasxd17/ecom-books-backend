@@ -2,17 +2,14 @@ const mongoose = require('mongoose')
 
 const reviewSchema = new mongoose.Schema({
     user_id:{
-        type:String,
-        required:true
+        type:String
     },
     rating:{
         type:Number,
-        required:true,
         enum: [1, 2, 3, 4, 5]
     },
     comment:{
-        type:String,
-        required:false
+        type:String
     }
 })
 
