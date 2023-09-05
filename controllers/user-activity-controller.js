@@ -1,4 +1,5 @@
 const { Books } = require("../models/books-model")
+const { Orders } = require("../models/orders-model")
 const { User } = require("../models/user-model")
 const mongoose = require('mongoose')
 
@@ -151,7 +152,7 @@ const showCart = () => {
                         }
                     }
                 ])
-                res.status(200).json({success:true, data:cartData.cart, total_bill:totalAmount})
+                res.status(200).json({success:true, data:cartData.cart, total_bill:totalAmount[0]['total_amount']})
             }
             else{
                 res.status(200).json({success:true, message:"The cart is empty right now."})
@@ -163,4 +164,77 @@ const showCart = () => {
     }
 }
 
-module.exports = { addReview, addToCart, removeBook, showCart }
+const checkout = () => {
+    return async(req, res, next) => {
+        try{
+            let bill = 0;
+            const userData = await User.findById(req.userId).select('-cart._id')
+            if(userData.cart.length){
+                const totalAmount = await User.aggregate([
+                    { $match : {
+                        _id : new mongoose.Types.ObjectId(req.userId)
+                    }},
+                    {
+                        $unwind:"$cart"
+                    },
+                    {
+                        $set:{
+                            "total_price" :{
+                                $multiply:[
+                                    "$cart.quantity",
+                                    "$cart.price"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        $group:{
+                            _id:req.userId,
+                            "total_amount":{
+                                $sum:"$total_price"
+                            }
+                        }
+                    }
+                ])
+                bill = totalAmount[0]['total_amount']
+            }
+            const orderContent = {
+                buyer_id:req.userId,
+                buyerName:userData.firstName + " " + userData.lastName,
+                shippingAddress:userData.address ? userData.address : null,
+                contactNumber:userData.contactNumber,
+                paymentType:req.body.paymentType,
+                status:"Pending",
+                totalBill: bill
+            }
+            // ADDITIONAL AVAILABILITY CHECK
+            const bookIdSet = userData.cart.map((doc) => {
+                return new mongoose.Types.ObjectId(doc.book_id)
+            })
+            const fetchCopies = await Books.find({_id :{$in : bookIdSet}}, {copies_available:1})
+            let unavailableSet = []
+            userData.cart.forEach((e) => {
+                fetchCopies.forEach((doc) => {
+                    if(doc._id == e.book_id && doc.copies_available < e.quantity){
+                        unavailableSet.push(e.title)
+                    }
+                })
+            })
+            if(unavailableSet.length){
+                res.status(400).json({success:false, message:`There are some items in your cart which are unavailable right now, Items - ${unavailableSet.toString()}`})
+            }
+            else{
+                // Make Cart Empty and Insert data into orders table.
+                orderContent['orderDetails'] = userData.cart
+                await Orders.create(orderContent)
+                await User.updateOne({_id : req.userId}, {$set : {cart : []}})
+                res.status(200).json({success:true, message:"You have successfully checked out."})
+            }
+        }
+        catch(error){
+            res.status(500).json({success:false, message:error.message})
+        }
+    }
+}
+
+module.exports = { addReview, addToCart, removeBook, showCart, checkout }

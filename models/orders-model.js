@@ -17,7 +17,7 @@ const orderDetailSchema = new mongoose.Schema({
 })
 
 const orderSchema = new mongoose.Schema({
-    buyerId:{
+    buyer_id:{
         type:String,
         required:true
     },
@@ -47,10 +47,6 @@ const orderSchema = new mongoose.Schema({
         type:String,
         enum:["Card", "COD", "UPI"],
         required:true
-    },
-    publish_year:{
-        type:Number,
-        required:false
     },
     totalBill:{
         type:Number,

@@ -7,5 +7,6 @@ module.exports = () => {
     router.post('/add_to_cart', userCheckMiddleware(), require('../controllers/user-activity-controller').addToCart())
     router.delete('/remove_from_cart', userCheckMiddleware(), require('../controllers/user-activity-controller').removeBook())
     router.get('/show_cart', userCheckMiddleware(), require('../controllers/user-activity-controller').showCart())
+    router.post('/checkout', userCheckMiddleware(), require('../controllers/user-activity-controller').checkout())
     return router
 }
