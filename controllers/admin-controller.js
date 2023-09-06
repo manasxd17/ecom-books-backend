@@ -30,7 +30,7 @@ const createBookListing = () => {
 const upgradeRole = () => {
     return async(req, res, next) => {
         try{
-            const resp = await User.findOneAndUpdate({email:req.body.email}, {role:"Admin"}, {new:true})
+            const resp = await User.findOneAndUpdate({email:req.body.email}, {role:"Admin"}, {new:true, runValidators:true})
             res.status(200).json({success:true, message:"Role upgraded successfully"})
         }
         catch(error){
@@ -44,7 +44,7 @@ const updateStatus = () => {
     return async(req, res, next) => {
         try{
             if(req.query.orderId){
-                const resp = await Orders.findOneAndUpdate({_id : new mongoose.Types.ObjectId(req.query.orderId)}, {status : req.query.status}, {new:true})
+                const resp = await Orders.findOneAndUpdate({_id : new mongoose.Types.ObjectId(req.query.orderId)}, {status : req.query.status}, {new:true, runValidators:true})
                 res.status(200).json({success:true, message:"Status updated successfully"})
             }
             else{

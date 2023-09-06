@@ -13,7 +13,7 @@ const addReview = () => {
             const update = {
                 $addToSet: { reviews: { user_id: req.userId, rating: req.body.rating, comment: req.body.comment ? req.body.comment : null } }
             }
-            const resp = await Books.findOneAndUpdate(conditions, update)
+            const resp = await Books.findOneAndUpdate(conditions, update, {runValidators:true})
             if (resp == null) {
                 res.status(400).json({ success: false, message: "You've already rated this book" })
             }
