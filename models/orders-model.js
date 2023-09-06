@@ -41,7 +41,8 @@ const orderSchema = new mongoose.Schema({
     },
     contactNumber:{
         type:Number,
-        required:true
+        required:true,
+        match:/^(\+91[\-\s]?)?[0]?(91)?[789]\d{9}$/
     },
     paymentType:{
         type:String,

@@ -224,9 +224,19 @@ const checkout = () => {
                 res.status(400).json({success:false, message:`There are some items in your cart which are unavailable right now, Items - ${unavailableSet.toString()}`})
             }
             else{
-                // Make Cart Empty and Insert data into orders table.
+                // Make Cart Empty, Insert data into orders table and reduce the copies count.
                 orderContent['orderDetails'] = userData.cart
                 await Orders.create(orderContent)
+                // MODIFY AVAILABLE COPIES COUNT
+                let newCount;
+                userData.cart.forEach(async(e) => {
+                    fetchCopies.forEach(async(doc) => {
+                        if(doc._id == e.book_id){
+                            newCount = doc.copies_available - e.quantity
+                            await Books.updateOne({_id : doc._id}, {$set: { copies_available: newCount}}, {new : true, safe:true, multi:false})
+                        }
+                    })
+                })
                 await User.updateOne({_id : req.userId}, {$set : {cart : []}})
                 res.status(200).json({success:true, message:"You have successfully checked out."})
             }
